@@ -1,0 +1,83 @@
+@import "tailwindcss";
+@import "react-toastify/dist/ReactToastify.css";
+
+:root {
+  --background: #f0f2f5;
+  --foreground: #001125;
+  --app-bg: #f0f2f5;
+  --app-surface: #ffffff;
+  --app-border: #e2e5ea;
+  --app-primary: #001125;
+  --app-accent: #d36567;
+  --app-accent-soft: #f9e8e9;
+  --app-text: #5c6570;
+  --app-heading: #001125;
+  --app-radius: 0.5rem;
+  --app-header-h: 3.75rem;
+}
+
+@theme {
+  --color-app-primary: var(--app-primary);
+  --color-app-accent: var(--app-accent);
+  --color-app-accent-soft: var(--app-accent-soft);
+  --color-app-surface: var(--app-surface);
+  --color-app-border: var(--app-border);
+  --color-app-text: var(--app-text);
+  --color-app-heading: var(--app-heading);
+  --color-app-bg: var(--app-bg);
+  --radius-app: var(--app-radius);
+}
+
+@keyframes app-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes app-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+body {
+  background-color: var(--app-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 100% -10%, rgb(211 101 103 / 0.08), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 0% 0%, rgb(0 17 37 / 0.05), transparent 50%),
+    linear-gradient(180deg, #f5f6f8 0%, var(--app-bg) 40%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--app-accent) 28%, white);
+  color: var(--app-heading);
+}
+
+.app-page-enter {
+  animation: app-fade-up 0.35s ease-out both;
+}
+
+.app-header-enter {
+  animation: app-fade-in 0.25s ease-out both;
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
+  "root": false,
+  "extends": [
+    "../biome.json",
+    "@tutods/biome-config/react",
+    "@tutods/biome-config/nextjs",
+    "@tutods/biome-config/tailwind"
+  ],
+  "files": {
+    "includes": ["**", "!!**/.next"]
+  },
+  "linter": {
+    "rules": {
+      "a11y": {
+        "noLabelWithoutControl": "off"
+      },
+      "performance": {
+        "noImgElement": "warn"
+      }
+    }
+  }
+}

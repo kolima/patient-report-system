@@ -1,0 +1,24 @@
+{
+  "name": "patient-report-system",
+  "private": true,
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "shared:build": "pnpm -C shared build",
+    "backend:dev": "pnpm run shared:build && pnpm -C backend dev",
+    "frontend:dev": "pnpm run shared:build && pnpm -C frontend dev",
+    "backend:seed": "pnpm -C backend seed",
+    "setup:project": "pnpm install && pnpm run shared:build && pnpm -C backend prisma:generate && pnpm run db:up && sleep 3 && pnpm -C backend prisma:migrate && pnpm -C backend seed",
+    "lint": "biome check frontend --config-path=frontend/biome.json && biome check backend --config-path=backend/biome.json && biome check shared --config-path=biome.json",
+    "lint:fix": "biome check --write frontend --config-path=frontend/biome.json && biome check --write backend --config-path=backend/biome.json && biome check --write shared --config-path=biome.json",
+    "format": "biome format --write frontend --config-path=frontend/biome.json && biome format --write backend --config-path=backend/biome.json && biome format --write shared --config-path=biome.json",
+    "check": "pnpm run lint",
+    "test": "pnpm -C frontend test && pnpm -C backend test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.3",
+    "@tutods/biome-config": "0.14.1",
+    "husky": "9.1.7"
+  }
+}

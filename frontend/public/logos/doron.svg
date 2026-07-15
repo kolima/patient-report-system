@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <title>At Doron's #2</title>
+  <rect width="40" height="40" rx="8" fill="#2563eb"/>
+  <rect x="10" y="15" width="20" height="10" rx="5" fill="white"/>
+  <line x1="20" y1="15" x2="20" y2="25" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

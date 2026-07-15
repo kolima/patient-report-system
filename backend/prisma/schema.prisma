@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Clinic {
+  id               String     @id @default(uuid())
+  name             String
+  logoUrl          String?    @map("logo_url")
+  accentColor      String     @default("#2563eb") @map("accent_color")
+  headingColor     String?    @map("heading_color")
+  textColor        String?    @map("text_color")
+  backgroundColor  String?    @map("background_color")
+  headingFont      String?    @map("heading_font")
+  bodyFont         String?    @map("body_font")
+  density          String?    @map("density")
+  address          String?
+  phone            String?
+  email            String?
+  website          String?
+  footerDisclaimer String?    @map("footer_disclaimer")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+  templates        Template[]
+
+  @@map("clinics")
+}
+
+model Template {
+  id        String   @id @default(uuid())
+  clinicId  String   @map("clinic_id")
+  name      String
+  config    Json
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  /// Partial unique index `templates_one_default_per_clinic` (clinic_id WHERE is_default) is in SQL migrations.
+  @@index([clinicId])
+  @@map("templates")
+}

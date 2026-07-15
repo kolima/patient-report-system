@@ -1,0 +1,46 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.3/schema.json",
+  "root": true,
+  "extends": ["@tutods/biome-config"],
+  "formatter": {
+    "attributePosition": "auto",
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 120
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "frontend/**/*.ts",
+      "frontend/**/*.tsx",
+      "!frontend/.next",
+      "backend/**/*.ts",
+      "backend/**/*.json",
+      "shared/**/*.ts",
+      "!shared/dist",
+      "package.json",
+      "frontend/package.json",
+      "backend/package.json",
+      "shared/package.json"
+    ]
+  },
+  "overrides": [
+    {
+      "includes": ["frontend/next-env.d.ts"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ]
+}
