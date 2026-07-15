@@ -7,6 +7,8 @@ import {
   getThemeSummaryLabel,
   resolveTheme,
   THEME_COLOR_DEFAULTS,
+  THEME_DENSITY_DEFAULT,
+  THEME_FONT_DEFAULTS,
   tintColor,
 } from "./theme";
 
@@ -26,7 +28,7 @@ const templateTheme = {
 } satisfies TemplateConfig["theme"];
 
 describe("getDisplayThemeValues inheritance", () => {
-  it("falls back to template values when inherit is on and clinic fields are unset", () => {
+  it("uses clinic or system defaults when inherit is on and clinic theme fields are unset", () => {
     const clinic = {
       accentColor: "#aa0000",
       headingColor: null,
@@ -40,12 +42,12 @@ describe("getDisplayThemeValues inheritance", () => {
     const values = getDisplayThemeValues(templateTheme, clinic);
 
     expect(values.primary).toBe("#aa0000");
-    expect(values.heading).toBe("#222222");
-    expect(values.text).toBe("#333333");
-    expect(values.background).toBe("#f5f5f5");
-    expect(values.fonts.heading).toBe("lora");
-    expect(values.fonts.body).toBe("merriweather");
-    expect(values.density).toBe("compact");
+    expect(values.heading).toBe(THEME_COLOR_DEFAULTS.heading);
+    expect(values.text).toBe(THEME_COLOR_DEFAULTS.text);
+    expect(values.background).toBe(THEME_COLOR_DEFAULTS.background);
+    expect(values.fonts.heading).toBe(THEME_FONT_DEFAULTS.heading);
+    expect(values.fonts.body).toBe(THEME_FONT_DEFAULTS.body);
+    expect(values.density).toBe(THEME_DENSITY_DEFAULT);
   });
 
   it("prefers set clinic fields over template when inherit is on", () => {

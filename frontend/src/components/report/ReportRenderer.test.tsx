@@ -34,7 +34,11 @@ describe("ReportRenderer", () => {
     };
 
     const { container } = render(
-      <ReportRenderer config={config} reportData={mockReportData} clinicBranding={mockClinicBranding} />,
+      <ReportRenderer
+        config={config}
+        reportData={mockReportData}
+        clinicBranding={{ ...mockClinicBranding, density: "compact" }}
+      />,
     );
 
     expect(container.querySelector("article")).toHaveClass("space-y-6");

@@ -84,19 +84,28 @@ export function getDisplayThemeValues(
 
   return {
     primary: inherit ? (clinic?.accentColor ?? theme.colors.primary) : theme.colors.primary,
-    heading: resolvedThemeColor(inherit, clinic?.headingColor, theme.colors.heading, THEME_COLOR_DEFAULTS.heading),
-    text: resolvedThemeColor(inherit, clinic?.textColor, theme.colors.text, THEME_COLOR_DEFAULTS.text),
-    background: resolvedThemeColor(
-      inherit,
-      clinic?.backgroundColor,
-      theme.colors.background,
-      THEME_COLOR_DEFAULTS.background,
-    ),
+    // Advanced colors: when inheriting, only clinic overrides or system defaults apply —
+    // template custom values are ignored so the editor does not show stale per-template colors.
+    heading: inherit
+      ? (clinic?.headingColor ?? THEME_COLOR_DEFAULTS.heading)
+      : resolvedThemeColor(false, undefined, theme.colors.heading, THEME_COLOR_DEFAULTS.heading),
+    text: inherit
+      ? (clinic?.textColor ?? THEME_COLOR_DEFAULTS.text)
+      : resolvedThemeColor(false, undefined, theme.colors.text, THEME_COLOR_DEFAULTS.text),
+    background: inherit
+      ? (clinic?.backgroundColor ?? THEME_COLOR_DEFAULTS.background)
+      : resolvedThemeColor(false, undefined, theme.colors.background, THEME_COLOR_DEFAULTS.background),
     fonts: {
-      heading: resolvedThemeFont(inherit, clinic?.headingFont, theme.fonts.heading, THEME_FONT_DEFAULTS.heading),
-      body: resolvedThemeFont(inherit, clinic?.bodyFont, theme.fonts.body, THEME_FONT_DEFAULTS.body),
+      heading: inherit
+        ? (clinic?.headingFont ?? THEME_FONT_DEFAULTS.heading)
+        : resolvedThemeFont(false, undefined, theme.fonts.heading, THEME_FONT_DEFAULTS.heading),
+      body: inherit
+        ? (clinic?.bodyFont ?? THEME_FONT_DEFAULTS.body)
+        : resolvedThemeFont(false, undefined, theme.fonts.body, THEME_FONT_DEFAULTS.body),
     },
-    density: resolvedThemeDensity(inherit, clinic?.density, theme.density),
+    density: inherit
+      ? (clinic?.density ?? THEME_DENSITY_DEFAULT)
+      : resolvedThemeDensity(false, undefined, theme.density),
   };
 }
 
