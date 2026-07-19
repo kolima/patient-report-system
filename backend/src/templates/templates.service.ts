@@ -21,16 +21,11 @@ export class TemplatesService {
       where: { clinicId },
       orderBy: { createdAt: "asc" },
     });
-    return Promise.all(templates.map((t) => this.withMigratedConfig(t)));
+    return this.withMigratedConfigs(templates);
   }
 
   async findOneForClinic(clinicId: string, templateId: string) {
-    const template = await this.prisma.template.findFirst({
-      where: { id: templateId, clinicId },
-    });
-    if (!template) {
-      throw new NotFoundException(`Template ${templateId} not found for clinic ${clinicId}`);
-    }
+    const template = await this.assertTemplateForClinic(clinicId, templateId);
     return this.withMigratedConfig(template);
   }
 
@@ -56,7 +51,7 @@ export class TemplatesService {
   }
 
   async update(clinicId: string, templateId: string, dto: UpdateTemplateDto) {
-    await this.findOneForClinic(clinicId, templateId);
+    await this.assertTemplateForClinic(clinicId, templateId);
 
     const data: Prisma.TemplateUpdateInput = {};
 
@@ -76,14 +71,20 @@ export class TemplatesService {
       }
     }
 
-    return this.prisma.template.update({
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException("At least one of name or config must be provided");
+    }
+
+    const updated = await this.prisma.template.update({
       where: { id: templateId },
       data,
     });
+
+    return this.withMigratedConfig(updated);
   }
 
   async remove(clinicId: string, templateId: string) {
-    const template = await this.findOneForClinic(clinicId, templateId);
+    const template = await this.assertTemplateForClinic(clinicId, templateId);
     const count = await this.prisma.template.count({ where: { clinicId } });
 
     if (count <= 1) {
@@ -99,7 +100,7 @@ export class TemplatesService {
   }
 
   async setDefault(clinicId: string, templateId: string) {
-    await this.findOneForClinic(clinicId, templateId);
+    await this.assertTemplateForClinic(clinicId, templateId);
 
     await this.prisma.$transaction([
       this.prisma.template.updateMany({
@@ -125,19 +126,45 @@ export class TemplatesService {
     return this.withMigratedConfig(template);
   }
 
+  private async assertTemplateForClinic(clinicId: string, templateId: string) {
+    const template = await this.prisma.template.findFirst({
+      where: { id: templateId, clinicId },
+    });
+    if (!template) {
+      throw new NotFoundException(`Template ${templateId} not found for clinic ${clinicId}`);
+    }
+    return template;
+  }
+
   /**
    * Migrates config on read and persists when the shape changes so injected
    * block IDs stay stable across requests.
    */
   private async withMigratedConfig<T extends { id: string; config: unknown }>(template: T) {
-    const migrated = migrateTemplateConfig(template.config);
-    if (!configsEqual(template.config, migrated)) {
-      await this.prisma.template.update({
-        where: { id: template.id },
-        data: { config: migrated as unknown as Prisma.InputJsonValue },
-      });
+    const [migrated] = await this.withMigratedConfigs([template]);
+    return migrated;
+  }
+
+  private async withMigratedConfigs<T extends { id: string; config: unknown }>(templates: T[]) {
+    const results = templates.map((template) => ({
+      template,
+      config: migrateTemplateConfig(template.config),
+    }));
+
+    const toPersist = results.filter(({ template, config }) => !configsEqual(template.config, config));
+
+    if (toPersist.length > 0) {
+      await this.prisma.$transaction(
+        toPersist.map(({ template, config }) =>
+          this.prisma.template.update({
+            where: { id: template.id },
+            data: { config: config as unknown as Prisma.InputJsonValue },
+          }),
+        ),
+      );
     }
-    return { ...template, config: migrated };
+
+    return results.map(({ template, config }) => ({ ...template, config }));
   }
 }
 

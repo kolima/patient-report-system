@@ -59,6 +59,39 @@ describe("TemplatesService", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]?.id).toBe(templateId);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("findAllForClinic persists legacy config migrations in one transaction", async () => {
+    const legacyTemplate = {
+      ...template,
+      config: {
+        configVersion: 1,
+        theme: template.config.theme,
+        blocks: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            type: "header",
+            visible: true,
+            settings: {},
+          },
+          {
+            id: "22222222-2222-4222-8222-222222222222",
+            type: "orders",
+            visible: true,
+            settings: {},
+          },
+        ],
+      },
+    };
+    prisma.template.findMany.mockResolvedValue([legacyTemplate]);
+    prisma.$transaction.mockImplementation((ops) => Promise.all(ops));
+
+    const result = await service.findAllForClinic(clinicId);
+
+    expect(prisma.$transaction).toHaveBeenCalledOnce();
+    expect(result[0]?.config.configVersion).toBe(2);
+    expect(result[0]?.config.blocks.map((b) => b.type)).toEqual(["header", "timeline", "coach", "deepDive", "orders"]);
   });
 
   it("findOneForClinic throws when template is missing", async () => {
@@ -112,17 +145,30 @@ describe("TemplatesService", () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it("update rejects empty payloads", async () => {
+    prisma.template.findFirst.mockResolvedValue(template);
+
+    await expect(service.update(clinicId, templateId, {})).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it("update returns migrated config", async () => {
+    prisma.template.findFirst.mockResolvedValue(template);
+    prisma.template.update.mockResolvedValue({ ...template, name: "Renamed" });
+
+    const result = await service.update(clinicId, templateId, { name: "Renamed" });
+
+    expect(result.name).toBe("Renamed");
+    expect(result.config.configVersion).toBe(2);
+  });
+
   it("setDefault clears other defaults and marks the target", async () => {
     prisma.template.findFirst.mockResolvedValue(template);
     prisma.$transaction.mockResolvedValue([]);
-    prisma.template.findFirst.mockResolvedValueOnce(template).mockResolvedValueOnce({
-      ...template,
-      isDefault: true,
-    });
 
     const result = await service.setDefault(clinicId, templateId);
 
     expect(prisma.$transaction).toHaveBeenCalled();
     expect(result.isDefault).toBe(true);
+    expect(result.config.configVersion).toBe(2);
   });
 });
