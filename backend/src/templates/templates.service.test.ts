@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, NotFoundException } from "@nestjs/common";
+import { Clinic } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createBaseTemplateConfig } from "../common/template-config";
 import type { PrismaService } from "../prisma/prisma.service";
@@ -52,7 +53,6 @@ describe("TemplatesService", () => {
   });
 
   it("findAllForClinic returns migrated templates", async () => {
-    prisma.clinic.findUnique.mockResolvedValue(clinic);
     prisma.template.findMany.mockResolvedValue([template]);
 
     const result = await service.findAllForClinic(clinicId);
@@ -68,11 +68,10 @@ describe("TemplatesService", () => {
   });
 
   it("create marks the first template as default", async () => {
-    prisma.clinic.findUnique.mockResolvedValue(clinic);
     prisma.template.count.mockResolvedValue(0);
     prisma.template.create.mockImplementation(({ data }) => Promise.resolve({ ...template, ...data }));
 
-    const result = await service.create(clinicId, {
+    const result = await service.create(clinic as Clinic, {
       name: "New Template",
       from: "base",
     });

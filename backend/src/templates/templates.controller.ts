@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Post, Put } from "@nestjs/common";
+import type { Clinic } from "@prisma/client";
+import { ClinicParam } from "../clinics/clinic-param.decorator";
 import { CreateTemplateDto, UpdateTemplateDto } from "./dto/template.dto";
+import { TemplateIdParam } from "./template-id-param.decorator";
 import { TemplatesService } from "./templates.service";
 
 @Controller("clinics/:clinicId/templates")
@@ -7,32 +10,32 @@ export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
   @Get()
-  findAll(@Param("clinicId") clinicId: string) {
-    return this.templatesService.findAllForClinic(clinicId);
+  findAll(@ClinicParam() clinic: Clinic) {
+    return this.templatesService.findAllForClinic(clinic.id);
   }
 
   @Get(":templateId")
-  findOne(@Param("clinicId") clinicId: string, @Param("templateId") templateId: string) {
-    return this.templatesService.findOneForClinic(clinicId, templateId);
+  findOne(@ClinicParam() clinic: Clinic, @TemplateIdParam() templateId: string) {
+    return this.templatesService.findOneForClinic(clinic.id, templateId);
   }
 
   @Post()
-  create(@Param("clinicId") clinicId: string, @Body() dto: CreateTemplateDto) {
-    return this.templatesService.create(clinicId, dto);
+  create(@ClinicParam() clinic: Clinic, @Body() dto: CreateTemplateDto) {
+    return this.templatesService.create(clinic, dto);
   }
 
   @Put(":templateId")
-  update(@Param("clinicId") clinicId: string, @Param("templateId") templateId: string, @Body() dto: UpdateTemplateDto) {
-    return this.templatesService.update(clinicId, templateId, dto);
+  update(@ClinicParam() clinic: Clinic, @TemplateIdParam() templateId: string, @Body() dto: UpdateTemplateDto) {
+    return this.templatesService.update(clinic.id, templateId, dto);
   }
 
   @Delete(":templateId")
-  remove(@Param("clinicId") clinicId: string, @Param("templateId") templateId: string) {
-    return this.templatesService.remove(clinicId, templateId);
+  remove(@ClinicParam() clinic: Clinic, @TemplateIdParam() templateId: string) {
+    return this.templatesService.remove(clinic.id, templateId);
   }
 
   @Post(":templateId/set-default")
-  setDefault(@Param("clinicId") clinicId: string, @Param("templateId") templateId: string) {
-    return this.templatesService.setDefault(clinicId, templateId);
+  setDefault(@ClinicParam() clinic: Clinic, @TemplateIdParam() templateId: string) {
+    return this.templatesService.setDefault(clinic.id, templateId);
   }
 }

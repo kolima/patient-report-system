@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import type { Clinic } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import {
   createBaseTemplateConfig,
@@ -16,7 +17,6 @@ export class TemplatesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAllForClinic(clinicId: string) {
-    await this.assertClinicExists(clinicId);
     const templates = await this.prisma.template.findMany({
       where: { clinicId },
       orderBy: { createdAt: "asc" },
@@ -34,21 +34,20 @@ export class TemplatesService {
     return this.withMigratedConfig(template);
   }
 
-  async create(clinicId: string, dto: CreateTemplateDto) {
-    const clinic = await this.assertClinicExists(clinicId);
+  async create(clinic: Clinic, dto: CreateTemplateDto) {
     const config =
       dto.from === "base"
         ? createBaseTemplateConfig(clinic.accentColor)
         : createBlankTemplateConfig(clinic.accentColor);
 
     const existingCount = await this.prisma.template.count({
-      where: { clinicId },
+      where: { clinicId: clinic.id },
     });
     const isDefault = existingCount === 0;
 
     return this.prisma.template.create({
       data: {
-        clinicId,
+        clinicId: clinic.id,
         name: dto.name,
         config: config as unknown as Prisma.InputJsonValue,
         isDefault,
@@ -139,14 +138,6 @@ export class TemplatesService {
       });
     }
     return { ...template, config: migrated };
-  }
-
-  private async assertClinicExists(clinicId: string) {
-    const clinic = await this.prisma.clinic.findUnique({
-      where: { id: clinicId },
-    });
-    if (!clinic) throw new NotFoundException(`Clinic ${clinicId} not found`);
-    return clinic;
   }
 }
 
